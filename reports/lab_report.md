@@ -1,29 +1,4 @@
-"""Report generation helper.
-
-TODO(student): implement report rendering using MetricsReport data
-and the template in reports/lab_report_template.md.
-"""
-
-from __future__ import annotations
-
-from pathlib import Path
-
-from .metrics import MetricsReport
-
-
-def render_report(metrics: MetricsReport) -> str:
-    """Render a complete lab report from metrics data."""
-    scenario_rows = []
-    for item in metrics.scenario_metrics:
-        status_str = "PASS" if item.success else "FAIL"
-        actual = item.actual_route or "none"
-        scenario_rows.append(
-            f"| {item.scenario_id} | {item.expected_route} | {actual} | "
-            f"{status_str} | {item.retry_count} | {item.interrupt_count} | {item.latency_ms} |"
-        )
-    scenarios_table = "\n".join(scenario_rows)
-
-    return f"""# Day 08 Lab Report
+# Day 08 Lab Report
 
 ## 1. Team / student
 
@@ -91,15 +66,21 @@ The system is constructed as a compiled LangGraph `StateGraph` with 11 registere
 ## 4. Scenario results
 
 Summary Metrics:
-- **Total Scenarios**: {metrics.total_scenarios}
-- **Success Rate**: {metrics.success_rate:.2%}
-- **Average Nodes Visited**: {metrics.avg_nodes_visited:.2f}
-- **Total Retries**: {metrics.total_retries}
-- **Total Interrupts**: {metrics.total_interrupts}
+- **Total Scenarios**: 7
+- **Success Rate**: 100.00%
+- **Average Nodes Visited**: 6.43
+- **Total Retries**: 3
+- **Total Interrupts**: 2
 
 | Scenario | Expected route | Actual route | Success | Retries | Interrupts | Latency (ms) |
 |---|---|---|:---:|---:|---:|---:|
-{scenarios_table}
+| S01_simple | simple | simple | PASS | 0 | 0 | 5759 |
+| S02_tool | tool | tool | PASS | 0 | 0 | 2139 |
+| S03_missing | missing_info | missing_info | PASS | 0 | 0 | 929 |
+| S04_risky | risky | risky | PASS | 0 | 1 | 2288 |
+| S05_error | error | error | PASS | 2 | 0 | 3071 |
+| S06_delete | risky | risky | PASS | 0 | 1 | 2763 |
+| S07_dead_letter | error | error | PASS | 1 | 0 | 1550 |
 
 ## 5. Failure analysis
 
@@ -146,11 +127,3 @@ Summary Metrics:
   semantic LLM judge evaluating output correctness against input constraints.
 - **Distributed Postgres Backend**: Deploy `PostgresSaver` via Docker Compose for production
   multi-worker horizontal scaling.
-"""
-
-
-def write_report(metrics: MetricsReport, output_path: str | Path) -> None:
-    """Write the rendered report to a file."""
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_report(metrics), encoding="utf-8")
